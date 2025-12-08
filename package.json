@@ -1,0 +1,28 @@
+{
+  "name": "livelo-promotion-tracker",
+  "version": "1.0.0",
+  "description": "Automated system to track Livelo mileage transfer promotions to Brazilian airlines with WhatsApp notifications",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "scrape": "node src/scraper/liveloScraper.js"
+  },
+  "keywords": [
+    "livelo",
+    "promotions",
+    "whatsapp",
+    "scraper",
+    "notifications"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^22.0.0",
+    "node-cron": "^3.0.3",
+    "whatsapp-web.js": "^1.24.0",
+    "qrcode-terminal": "^0.12.0",
+    "winston": "^3.11.0"
+  }
+}

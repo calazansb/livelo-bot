@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+logs
+.wwebjs_auth
+.env
+.git
+.DS_Store
+Dockerfile
+DEPLOY.md

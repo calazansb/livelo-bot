@@ -1,0 +1,27 @@
+{
+    "whatsapp": {
+        "recipients": [
+            "+5531998259845"
+        ]
+    },
+    "schedule": {
+        "timezone": "America/Sao_Paulo",
+        "notificationTime": "12:00",
+        "cronExpression": "0 12 * * *"
+    },
+    "airlines": [
+        "LATAM",
+        "Azul",
+        "Smiles",
+        "Flying Blue"
+    ],
+    "scraping": {
+        "headless": true,
+        "timeout": 30000,
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
+    "livelo": {
+        "searchUrl": "https://www.livelo.com.br/busca?query=transferir+pontos+companhias+aereas",
+        "baseUrl": "https://www.livelo.com.br"
+    }
+}
