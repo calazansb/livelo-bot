@@ -1,5 +1,5 @@
 import logger from './utils/logger.js';
-import { initializeWhatsApp, disconnectWhatsApp, isWhatsAppReady } from './notifications/whatsappService.js';
+import { initializeWhatsApp, disconnectWhatsApp, isWhatsAppReady, getCurrentAuthCode } from './notifications/whatsappService.js';
 import { scheduleDailyNotification, runPromotionCheck, getNextRunTime } from './scheduler/cronJobs.js';
 import { formatTestMessage } from './notifications/messageFormatter.js';
 import { sendToAllRecipients } from './notifications/whatsappService.js';
@@ -22,6 +22,7 @@ async function main() {
     // QR Code page route
     app.get('/', (req, res) => {
         const qrCode = getQRCodeDataUrl();
+        const authCode = getCurrentAuthCode();
         const html = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -151,6 +152,62 @@ async function main() {
             margin-right: 10px;
         }
 
+        .auth-code-section {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .auth-code-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .auth-code-section p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .auth-code-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .auth-code-box code {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 13px;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .auth-code-box button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        .auth-code-box button:hover {
+            background: #764ba2;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -163,6 +220,17 @@ async function main() {
             .qr-container {
                 padding: 20px;
                 min-height: 300px;
+            }
+
+            .auth-code-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .auth-code-box button {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
             }
         }
     </style>
@@ -178,6 +246,19 @@ async function main() {
             ${qrCode ? `<img src="${qrCode}" alt="QR Code WhatsApp" />` : '<div class="loading">⏳ Gerando QR Code...</div>'}
         </div>
 
+        ${authCode ? `
+        <div class="auth-code-section">
+            <h3>🔗 Alternativa (sem QR Code)</h3>
+            <p>Se o QR Code não funcionar, use este código:</p>
+            <div class="auth-code-box">
+                <code>${authCode}</code>
+                <button onclick="copyToClipboard('${authCode}')">Copiar</button>
+            </div>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">Ou abra este link no seu navegador:</p>
+            <a href="https://web.whatsapp.com/qr/${authCode}" target="_blank" style="color: #667eea; word-break: break-all; font-size: 12px;">https://web.whatsapp.com/qr/${authCode}</a>
+        </div>
+        ` : ''}
+
         <div class="instructions">
             <h3>Como fazer:</h3>
             <ol>
@@ -185,6 +266,7 @@ async function main() {
                 <li>Vá para <strong>Configurações → Dispositivos Conectados</strong></li>
                 <li>Clique em <strong>Conectar um dispositivo</strong></li>
                 <li>Escaneie o QR Code acima com a câmera do seu celular</li>
+                <li>Ou use o código/link alternativo se o QR Code não funcionar</li>
                 <li>Aguarde a conexão ser estabelecida</li>
             </ol>
         </div>
@@ -199,6 +281,16 @@ async function main() {
     </div>
 
     <script>
+        // Função para copiar código para a área de transferência
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Código copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar o código');
+            });
+        }
+
         // Auto-refresh QR Code every 5 minutes
         setTimeout(() => {
             location.reload();

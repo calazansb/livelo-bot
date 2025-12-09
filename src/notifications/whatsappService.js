@@ -16,6 +16,26 @@ const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
 
 let whatsappClient = null;
 let isClientReady = false;
+let currentQRCode = null;
+let currentAuthCode = null;
+
+/**
+ * Extract authentication code from QR code string
+ */
+function extractAuthCode(qrString) {
+    try {
+        // QR code format: https://web.whatsapp.com/qr/...
+        // Extract the code part after /qr/
+        const match = qrString.match(/qr\/([^,]+)/);
+        if (match && match[1]) {
+            return match[1];
+        }
+        return qrString.substring(0, 50) + '...'; // Fallback: return first 50 chars
+    } catch (error) {
+        logger.error(`Error extracting auth code: ${error.message}`);
+        return null;
+    }
+}
 
 /**
  * Initialize WhatsApp client
@@ -39,17 +59,28 @@ export async function initializeWhatsApp() {
             whatsappClient.on('qr', async (qr) => {
                 logger.info('QR Code received. Scan with your phone:');
                 
+                // Store QR code and extract auth code
+                currentQRCode = qr;
+                currentAuthCode = extractAuthCode(qr);
+                
+                logger.info(`📱 Código de autenticação: ${currentAuthCode}`);
+                logger.info(`🔗 Link direto: https://web.whatsapp.com/qr/${currentAuthCode}`);
+                
                 // Generate QR Code image
                 try {
                     await generateQRCodeImage(qr);
                     console.log('\n✅ QR Code gerado com sucesso!');
                     console.log('📱 Abra o navegador em: http://localhost:8080');
-                    console.log('   Ou acesse a URL do Railway para escanear o QR Code\n');
+                    console.log('   Ou acesse a URL do Railway para escanear o QR Code');
+                    console.log(`\n🔗 Alternativa (sem QR Code):`);
+                    console.log(`   Link direto: https://web.whatsapp.com/qr/${currentAuthCode}`);
+                    console.log(`   Código: ${currentAuthCode}\n`);
                 } catch (error) {
                     logger.error(`Error generating QR Code image: ${error.message}`);
                     // Fallback to terminal QR Code
                     qrcode.generate(qr, { small: true });
-                    console.log('\n📱 Abra o WhatsApp no seu celular e escaneie o QR code acima\n');
+                    console.log('\n📱 Abra o WhatsApp no seu celular e escaneie o QR code acima');
+                    console.log(`\n🔗 Ou use este link direto: https://web.whatsapp.com/qr/${currentAuthCode}\n`);
                 }
             });
 
@@ -100,6 +131,20 @@ export async function initializeWhatsApp() {
             reject(error);
         }
     });
+}
+
+/**
+ * Get current QR code
+ */
+export function getCurrentQRCode() {
+    return currentQRCode;
+}
+
+/**
+ * Get current authentication code
+ */
+export function getCurrentAuthCode() {
+    return currentAuthCode;
 }
 
 /**
