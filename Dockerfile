@@ -25,7 +25,6 @@ RUN npm install
 COPY . .
 
 # Create volume mount points for persistence
-VOLUME ["/usr/src/app/.wwebjs_auth", "/usr/src/app/logs"]
 
 # Start the application
 CMD [ "npm", "start" ]
