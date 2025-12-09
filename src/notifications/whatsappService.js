@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
-import { generateQRCodeImage, initializeQRCodeServer, stopQRCodeServer } from './qrCodeServer.js';
+import { generateQRCodeImage } from './qrCodeServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,16 +21,9 @@ let isClientReady = false;
  * Initialize WhatsApp client
  */
 export async function initializeWhatsApp() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             logger.info('Initializing WhatsApp client...');
-            
-            // Initialize QR Code server
-            try {
-                await initializeQRCodeServer(3000);
-            } catch (error) {
-                logger.warn(`Could not start QR Code server: ${error.message}`);
-            }
 
             whatsappClient = new Client({
                 authStrategy: new LocalAuth({
@@ -50,7 +43,7 @@ export async function initializeWhatsApp() {
                 try {
                     await generateQRCodeImage(qr);
                     console.log('\n✅ QR Code gerado com sucesso!');
-                    console.log('📱 Abra o navegador em: http://localhost:3000');
+                    console.log('📱 Abra o navegador em: http://localhost:8080');
                     console.log('   Ou acesse a URL do Railway para escanear o QR Code\n');
                 } catch (error) {
                     logger.error(`Error generating QR Code image: ${error.message}`);
@@ -186,12 +179,5 @@ export async function disconnectWhatsApp() {
         await whatsappClient.destroy();
         isClientReady = false;
         logger.info('WhatsApp client disconnected');
-    }
-    
-    // Stop QR Code server
-    try {
-        await stopQRCodeServer();
-    } catch (error) {
-        logger.warn(`Error stopping QR Code server: ${error.message}`);
     }
 }
