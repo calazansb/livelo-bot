@@ -51,7 +51,39 @@ export async function initializeWhatsApp() {
                 }),
                 puppeteer: {
                     headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-gpu',
+                        '--single-process',
+                        '--no-first-run',
+                        '--no-default-browser-check',
+                        '--disable-default-apps',
+                        '--disable-popup-blocking',
+                        '--disable-translate',
+                        '--disable-background-networking',
+                        '--disable-breakpad',
+                        '--disable-client-side-phishing-detection',
+                        '--disable-component-extensions-with-background-pages',
+                        '--disable-default-apps',
+                        '--disable-extensions',
+                        '--disable-features=TranslateUI',
+                        '--disable-hang-monitor',
+                        '--disable-ipc-flooding-protection',
+                        '--disable-popup-blocking',
+                        '--disable-prompt-on-repost',
+                        '--disable-renderer-backgrounding',
+                        '--disable-sync',
+                        '--enable-automation',
+                        '--export-tagged-pdf',
+                        '--metrics-recording-only',
+                        '--mute-audio',
+                        '--no-default-browser-check',
+                        '--no-first-run',
+                        '--password-store=basic',
+                        '--use-mock-keychain'
+                    ]
                 }
             });
 
