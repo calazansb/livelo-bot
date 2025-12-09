@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
+import { generateQRCodeImage, initializeQRCodeServer, stopQRCodeServer } from './qrCodeServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,9 +21,16 @@ let isClientReady = false;
  * Initialize WhatsApp client
  */
 export async function initializeWhatsApp() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             logger.info('Initializing WhatsApp client...');
+            
+            // Initialize QR Code server
+            try {
+                await initializeQRCodeServer(3000);
+            } catch (error) {
+                logger.warn(`Could not start QR Code server: ${error.message}`);
+            }
 
             whatsappClient = new Client({
                 authStrategy: new LocalAuth({
@@ -35,10 +43,21 @@ export async function initializeWhatsApp() {
             });
 
             // QR Code event
-            whatsappClient.on('qr', (qr) => {
+            whatsappClient.on('qr', async (qr) => {
                 logger.info('QR Code received. Scan with your phone:');
-                qrcode.generate(qr, { small: true });
-                console.log('\n📱 Abra o WhatsApp no seu celular e escaneie o QR code acima\n');
+                
+                // Generate QR Code image
+                try {
+                    await generateQRCodeImage(qr);
+                    console.log('\n✅ QR Code gerado com sucesso!');
+                    console.log('📱 Abra o navegador em: http://localhost:3000');
+                    console.log('   Ou acesse a URL do Railway para escanear o QR Code\n');
+                } catch (error) {
+                    logger.error(`Error generating QR Code image: ${error.message}`);
+                    // Fallback to terminal QR Code
+                    qrcode.generate(qr, { small: true });
+                    console.log('\n📱 Abra o WhatsApp no seu celular e escaneie o QR code acima\n');
+                }
             });
 
             // Ready event
@@ -69,12 +88,19 @@ export async function initializeWhatsApp() {
             whatsappClient.initialize();
 
             // Timeout after 5 minutes if not authenticated
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (!isClientReady) {
                     logger.error('WhatsApp initialization timeout');
                     reject(new Error('Initialization timeout'));
                 }
             }, 300000);
+            
+            // Store original resolve to clear timeout
+            const originalResolve = resolve;
+            resolve = (client) => {
+                clearTimeout(timeoutId);
+                originalResolve(client);
+            };
 
         } catch (error) {
             logger.error(`Error initializing WhatsApp: ${error.message}`);
@@ -160,5 +186,12 @@ export async function disconnectWhatsApp() {
         await whatsappClient.destroy();
         isClientReady = false;
         logger.info('WhatsApp client disconnected');
+    }
+    
+    // Stop QR Code server
+    try {
+        await stopQRCodeServer();
+    } catch (error) {
+        logger.warn(`Error stopping QR Code server: ${error.message}`);
     }
 }
