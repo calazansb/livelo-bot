@@ -117,6 +117,25 @@ export function schedulePeriodicChecks() {
 }
 
 /**
+ * Debug: Heartbeat to verify scheduler is alive
+ */
+export function scheduleHeartbeat() {
+    // Run every hour at minute 0
+    const cronExpression = '0 * * * *';
+    const timezone = config.schedule.timezone;
+
+    logger.info(`Scheduling heartbeat: ${cronExpression}`);
+
+    cron.schedule(cronExpression, () => {
+        const now = new Date();
+        logger.info(`💓 Heartbeat: Scheduler is alive. Time: ${now.toLocaleString('pt-BR', { timeZone: timezone })}`);
+    }, {
+        scheduled: true,
+        timezone: timezone
+    });
+}
+
+/**
  * Get next scheduled run time
  */
 export function getNextRunTime() {

@@ -1,6 +1,6 @@
 import logger from './utils/logger.js';
 import { initializeWhatsApp, disconnectWhatsApp, isWhatsAppReady, getCurrentAuthCode } from './notifications/whatsappService.js';
-import { scheduleDailyNotification, runPromotionCheck, getNextRunTime } from './scheduler/cronJobs.js';
+import { scheduleDailyNotification, runPromotionCheck, getNextRunTime, scheduleHeartbeat } from './scheduler/cronJobs.js';
 import { formatTestMessage } from './notifications/messageFormatter.js';
 import { sendToAllRecipients } from './notifications/whatsappService.js';
 import { generateQRCodeImage, getQRCodeDataUrl } from './notifications/qrCodeServer.js';
@@ -356,6 +356,13 @@ async function main() {
 
         logger.info('Starting Livelo Promotion Tracker...');
 
+        // Debug: Log current time settings
+        const now = new Date();
+        logger.info(`Server Time: ${now.toString()}`);
+        logger.info(`Brazil Time: ${now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`);
+        console.log(`\n🕒 Hora do Servidor: ${now.toString()}`);
+        console.log(`🕒 Hora Brasil: ${now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`);
+
         // Initialize WhatsApp
         logger.info('Step 1: Initializing WhatsApp connection...');
         console.log('\n📱 Inicializando conexão com WhatsApp...\n');
@@ -391,6 +398,7 @@ async function main() {
         console.log('⏰ Configurando notificações diárias...\n');
 
         scheduleDailyNotification();
+        scheduleHeartbeat();
 
         const nextRun = getNextRunTime();
         console.log(`✅ Notificações agendadas para todos os dias às 12:00 (horário de Brasília)`);
