@@ -139,16 +139,22 @@ export function scheduleHeartbeat() {
  * Get next scheduled run time
  */
 export function getNextRunTime() {
-    const cronExpression = config.schedule.cronExpression;
     const now = new Date();
+    // Use target hours from the requirement: 8, 14, 20
+    const scheduledHours = [8, 14, 20];
 
-    // Simple calculation for daily noon schedule
+    // Find the next hour in the list that is after current hour
+    const nextHour = scheduledHours.find(h => h > now.getHours());
+
     const next = new Date(now);
-    next.setHours(12, 0, 0, 0);
 
-    // If noon has passed today, schedule for tomorrow
-    if (now.getHours() >= 12) {
+    if (nextHour !== undefined) {
+        // Found a run for today
+        next.setHours(nextHour, 0, 0, 0);
+    } else {
+        // No more runs today, schedule for first slot tomorrow
         next.setDate(next.getDate() + 1);
+        next.setHours(scheduledHours[0], 0, 0, 0);
     }
 
     return next;

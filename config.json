@@ -6,8 +6,8 @@
     },
     "schedule": {
         "timezone": "America/Sao_Paulo",
-        "notificationTime": "12:00",
-        "cronExpression": "0 12 * * *"
+        "notificationTime": "08:00, 14:00, 20:00",
+        "cronExpression": "0 8,14,20 * * *"
     },
     "airlines": [
         "LATAM",

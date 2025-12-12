@@ -401,7 +401,7 @@ async function main() {
         scheduleHeartbeat();
 
         const nextRun = getNextRunTime();
-        console.log(`✅ Notificações agendadas para todos os dias às 12:00 (horário de Brasília)`);
+        console.log(`✅ Notificações agendadas para: 08:00, 14:00 e 20:00 (horário de Brasília)`);
         console.log(`📅 Próxima execução: ${nextRun.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`);
 
         // Optional: Run initial check
