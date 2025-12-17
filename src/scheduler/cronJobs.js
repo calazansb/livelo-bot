@@ -75,53 +75,44 @@ export async function runPromotionCheck() {
  * Schedule daily notification at noon (Brazil time)
  */
 export function scheduleDailyNotification() {
-    const cronExpression = config.schedule.cronExpression;
     const timezone = config.schedule.timezone;
+    // Explicitly define the schedules
+    const schedules = [
+        '0 8 * * *',  // 08:00
+        '0 14 * * *', // 14:00
+        '0 20 * * *'  // 20:00
+    ];
 
-    logger.info(`Scheduling daily notification: ${cronExpression} (${timezone})`);
+    logger.info(`Scheduling ${schedules.length} daily notifications (${timezone})`);
 
-    const task = cron.schedule(cronExpression, async () => {
-        logger.info('Cron job triggered');
-        await runPromotionCheck();
-    }, {
-        scheduled: true,
-        timezone: timezone
+    schedules.forEach(expression => {
+        logger.info(`Scheduling job: ${expression}`);
+        cron.schedule(expression, async () => {
+            logger.info(`⏰ Cron job triggered: ${expression}`);
+            await runPromotionCheck();
+        }, {
+            scheduled: true,
+            timezone: timezone
+        });
     });
 
-    logger.info('Daily notification scheduled successfully');
-
-    return task;
+    logger.info('Daily notifications scheduled successfully');
 }
 
 /**
  * Schedule periodic checks (optional - every 6 hours)
  */
 export function schedulePeriodicChecks() {
-    // Run every 6 hours: 0 */6 * * *
-    const cronExpression = '0 */6 * * *';
-    const timezone = config.schedule.timezone;
-
-    logger.info(`Scheduling periodic checks: ${cronExpression} (${timezone})`);
-
-    const task = cron.schedule(cronExpression, async () => {
-        logger.info('Periodic check triggered');
-        await runPromotionCheck();
-    }, {
-        scheduled: true,
-        timezone: timezone
-    });
-
-    logger.info('Periodic checks scheduled successfully');
-
-    return task;
+    // Disabled in favor of explicit daily notifications
+    logger.info('Periodic checks disabled in favor of fixed schedule');
 }
 
 /**
  * Debug: Heartbeat to verify scheduler is alive
  */
 export function scheduleHeartbeat() {
-    // Run every hour at minute 0
-    const cronExpression = '0 * * * *';
+    // Run every 10 minutes
+    const cronExpression = '*/10 * * * *';
     const timezone = config.schedule.timezone;
 
     logger.info(`Scheduling heartbeat: ${cronExpression}`);
