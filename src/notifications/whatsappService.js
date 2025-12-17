@@ -56,7 +56,6 @@ export async function initializeWhatsApp() {
                         '--disable-setuid-sandbox',
                         '--disable-dev-shm-usage',
                         '--disable-gpu',
-                        '--single-process',
                         '--no-first-run',
                         '--no-default-browser-check',
                         '--disable-default-apps',
@@ -82,7 +81,8 @@ export async function initializeWhatsApp() {
                         '--no-default-browser-check',
                         '--no-first-run',
                         '--password-store=basic',
-                        '--use-mock-keychain'
+                        '--use-mock-keychain',
+                        '--disable-software-rasterizer'
                     ]
                 }
             });
@@ -90,14 +90,14 @@ export async function initializeWhatsApp() {
             // QR Code event
             whatsappClient.on('qr', async (qr) => {
                 logger.info('QR Code received. Scan with your phone:');
-                
+
                 // Store QR code and extract auth code
                 currentQRCode = qr;
                 currentAuthCode = extractAuthCode(qr);
-                
+
                 logger.info(`📱 Código de autenticação: ${currentAuthCode}`);
                 logger.info(`🔗 Link direto: https://web.whatsapp.com/qr/${currentAuthCode}`);
-                
+
                 // Generate QR Code image
                 try {
                     await generateQRCodeImage(qr);
@@ -150,7 +150,7 @@ export async function initializeWhatsApp() {
                     reject(new Error('Initialization timeout'));
                 }
             }, 300000);
-            
+
             // Store original resolve to clear timeout
             const originalResolve = resolve;
             resolve = (client) => {
